@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.remember
@@ -48,11 +49,19 @@ fun Content() {
     }
 }
 
-
 @Composable
 fun TemperatureView(modifier: Modifier) {
     var currentTemperature by remember { mutableDoubleStateOf(1.0) }
-    var targetTemperature by remember { mutableDoubleStateOf(71.0) }
+    var targetTemperature by remember { mutableDoubleStateOf(0.0) }
+
+    LaunchedEffect(Unit) {
+        val fetcher = BrewfatherFetcher()
+        val batch = fetcher.getLatestAllGrainBatch()
+        val strikeTemp = batch?.strikeTemp
+        if (strikeTemp != null) {
+            targetTemperature = strikeTemp
+        }
+    }
 
     Column(
         modifier = modifier,
