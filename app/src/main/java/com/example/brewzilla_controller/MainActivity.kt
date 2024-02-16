@@ -4,6 +4,7 @@ package com.example.brewzilla_controller
 
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -37,9 +38,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.brewzilla_controller.ui.theme.MyApplicationTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,8 +66,8 @@ fun Content() {
 }
 @Composable
 fun TemperatureView(modifier: Modifier) {
-    var currentTemperature by remember { mutableDoubleStateOf(1.0) }
-    var targetTemperature by remember { mutableDoubleStateOf(0.0) }
+    var currentTemperature by remember { mutableStateOf("") }
+    var targetTemperature by remember { mutableStateOf("") }
     var recipeName by remember { mutableStateOf("") }
 
     // set the target temperature from brewfather
@@ -78,8 +76,13 @@ fun TemperatureView(modifier: Modifier) {
         val batch = brewfatherFetcher.getLatestAllGrainBatch()
         val name = batch?.recipe?.name
         if (name != null) recipeName = name
-        val strikeTemp = batch?.strikeTemp ?: return@LaunchedEffect
-        targetTemperature = strikeTemp
+        val strikeTemp = batch?.strikeTemp
+        if (strikeTemp != null) targetTemperature = "%.1f".format(strikeTemp)
+
+        val rapFetcher = RaptFetcher()
+        val currentTemp = rapFetcher.getBrewzillData()?.temperature
+        if (currentTemp != null) currentTemperature = "%.1f".format(currentTemp)
+
     }
 
     LazyVerticalGrid(
